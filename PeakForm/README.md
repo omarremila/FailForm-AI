@@ -1,12 +1,28 @@
-# React + Vite
+# VideoFormAnalysis - Pose Detection for Gym Workouts
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project implements a React component that uses TensorFlow.js with MoveNet pose detection to analyze gym workout form from an uploaded video. It provides real-time feedback and a summary of analysis results after the video ends.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Video Upload:** Users can upload a video file for analysis.
+- **Pose Detection:** Frame-by-frame pose estimation using the MoveNet detector from TensorFlow.js.
+- **Workout Analysis:** Conditional logic to analyze different workouts:
+  - Squat
+  - Bench Press
+  - Deadlift
+  - Cable Shrugs
+- **Summary Reporting:** Accumulates results across frames and displays a final summary after video completion.
+- **Real-time Feedback:** Displays immediate feedback on the video analysis.
 
-## Expanding the ESLint configuration
+## Installation
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+# Clone the repository
+$ git clone <repository_url>
+
+# Navigate to the project directory
+$ cd <repository_directory>
+
+# Install project dependencies
+$ npm install
+```
