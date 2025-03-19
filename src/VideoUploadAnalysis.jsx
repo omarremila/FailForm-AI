@@ -1,85 +1,98 @@
-// VideoUploadAnalysis.jsx
 import React, { useRef, useEffect, useState } from 'react';
 import * as posenet from '@tensorflow-models/posenet';
 import '@tensorflow/tfjs-backend-webgl';
 import { drawKeypoints, drawSkeleton } from './utilities';
 import { checkExerciseForm } from './poseUtils';
+import processSquat, { evaluateSquatSession } from './Squat';
 
 function VideoUploadAnalysis({ exercise }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [videoURL, setVideoURL] = useState(null);
-  const [feedback, setFeedback] = useState({ message: "", color: "" });
+  const [feedback, setFeedback] = useState({ message: "", color: "", highest_angle: null });
+  const animationFrameIdRef = useRef(null);
+  const [videoEnded, setVideoEnded] = useState(false);
+  const videoEndedRef = useRef(false);
+
 
   const handleVideoUpload = (event) => {
     const file = event.target.files[0];
     setVideoURL(URL.createObjectURL(file));
   };
 
+  const handleVideoEnded = () => {
+    console.log("Video ended event fired");
+    videoEndedRef.current = true;
+    cancelAnimationFrame(animationFrameIdRef.current);
+    const finalResult = evaluateSquatSession();
+    console.log("Final squat evaluation:", finalResult);
+    setFeedback(finalResult);
+  };
+
   useEffect(() => {
-    if (!videoURL) return;
-    let intervalId;
-  
+    let net;
     const runPoseNet = async () => {
-      const net = await posenet.load({
+      net = await posenet.load({
         inputResolution: { width: 640, height: 480 },
         scale: 0.5,
       });
-  
-      const videoElement = videoRef.current;
-  
-      const startDetection = () => {
-        intervalId = setInterval(async () => {
-          // Check that the video element is ready and has dimensions
-          if (
-            videoElement.readyState === 4 &&
-            videoElement.videoWidth > 0 &&
-            videoElement.videoHeight > 0
-          ) {
-            const pose = await net.estimateSinglePose(videoElement);
-            console.log('Pose:', pose);
-  
-            // IMPORTANT: pass pose.keypoints to your feedback function
-            const fb = checkExerciseForm(pose.keypoints, exercise);
-            setFeedback(fb);
-  
-            drawCanvas(pose, videoElement);
-          }
-        }, 100);
-      };
-  
-      // If the video is already ready, start detection immediately.
-      if (videoElement.readyState >= 3) {
-        videoElement.play();
-        startDetection();
-      } else {
-        // Otherwise, attach an event listener
-        videoElement.addEventListener('loadeddata', () => {
-          videoElement.play();
-          startDetection();
-        });
-      }
+      detectPose();
     };
-  
-    runPoseNet();
-    return () => clearInterval(intervalId);
-  }, [videoURL, exercise]);
-  
- 
 
-  const drawCanvas = (pose, video) => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawKeypoints(pose.keypoints, 0.6, ctx);
-    drawSkeleton(pose.keypoints, 0.6, ctx);
-  };
+    
+    const detectPose = async () => {
+      if (videoEndedRef.current) return; // Immediately exit if video ended
+    
+      if (
+        videoRef.current &&
+        videoRef.current.readyState === 4 &&
+        videoRef.current.videoWidth > 0 &&
+        videoRef.current.videoHeight > 0
+      ) {
+        const video = videoRef.current;
+        const pose = await net.estimateSinglePose(video);
+        
+        // Check again in case the video ended during the async call
+        if (videoEndedRef.current) return;
+        
+        if (exercise === 'Squat') {
+          const fb = processSquat(pose.keypoints, canvasRef.current.getContext('2d'));
+          setFeedback(fb);
+        }
+      }
+      animationFrameIdRef.current = requestAnimationFrame(detectPose);
+    };
+    
+
+    runPoseNet();
+    return () => {
+      cancelAnimationFrame(animationFrameIdRef.current);
+    };
+  }, [exercise, videoEnded]);
 
   return (
     <div style={{ position: 'relative', width: 640, height: 480, margin: '0 auto' }}>
-      {!videoURL && <input type="file" accept="video/*" onChange={handleVideoUpload} />}
+{!videoURL && (
+  <div className="video-upload-container">
+    <div className="upload-button-group">
+      <label htmlFor="video-upload" className="upload-button">
+        Upload a Video
+      </label>
+    </div>
+    <input
+      id="video-upload"
+      type="file"
+      accept="video/*"
+      onChange={handleVideoUpload}
+      style={{ display: 'none' }}
+    />
+    
+
+  </div>
+)}
+
+
+
       {videoURL && (
         <>
           <video
@@ -90,31 +103,32 @@ function VideoUploadAnalysis({ exercise }) {
             controls
             autoPlay
             muted
-            loop
+            onEnded={handleVideoEnded}
             style={{ position: 'absolute', zIndex: 9 }}
           />
           <canvas
             ref={canvasRef}
-            width={640}
-            height={480}
+            width={900}
+            height={600}
             style={{ position: 'absolute', top: 0, left: 0, zIndex: 10 }}
           />
           {/* Feedback Overlay */}
           <div
-            style={{
-              position: "absolute",
-              top: 10,
-              left: 10,
-              backgroundColor: feedback.color,
-              color: "black",
-              padding: "5px 10px",
-              borderRadius: "5px",
-              fontWeight: "bold",
-              zIndex: 20,
-            }}
-          >
-            {feedback.message}
-          </div>
+  style={{
+    position: "absolute",
+    top: 10,
+    left: 10,
+    backgroundColor: feedback.color,
+    color: "black",
+    padding: "5px 10px",
+    borderRadius: "5px",
+    fontWeight: "bold",
+    zIndex: 20,
+  }}
+>
+{feedback.message} {feedback.highest_angle ? `(Deepest angle: ${feedback.highest_angle}°)` : ""}
+</div>
+
         </>
       )}
     </div>

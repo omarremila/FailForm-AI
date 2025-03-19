@@ -1,4 +1,97 @@
-/* App.css */
+/* Global styles */
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #FAF3E0;  /* Soft warm beige background */
+  color: #333333;             /* Deep charcoal gray text */
+}
+
+/* Header styling */
+.header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 11px;
+  height: 80px;
+  background-color: #FFFFFF;  /* White background */
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.header img {
+  width: 50px;
+  height: 50px;
+}
+
+.header h1 {
+  font-size: 2rem;
+  font-weight: 450;
+  color: #333333;  /* Matching text color */
+}
+
+/* Exercise selection styling */
+.exercise-selection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 2rem;
+}
+/* Style for the upload video button */
+.upload-button {
+  display: inline-block;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.2); /* Translucent white background */
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+  margin: 20px auto; /* Center the button if the container has text-align: center */
+}
+
+/* Optional: if the parent container isn’t already centered, you can center the button container */
+.mode-selection {
+  text-align: center;
+}
+
+/* Hover effect for a modern touch */
+.upload-button:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+  border-color: rgba(255, 255, 255, 0.8);
+  transform: translateY(-2px);
+}
+
+.exercise-selection h2 {
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.exercise-selection select {
+  width: 220px;
+  padding: 0.6rem 1rem;
+  border: 1px solid #333333;
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: #FFFFFF;  /* White background for dropdown */
+  color: #333333;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='10'%20height='6'%3E%3Cpath%20fill='%23333333'%20d='M0%200l5%206%205-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 0.8rem auto;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.exercise-selection select:hover {
+  border-color: #555555;
+}
+
+/* Mode selection styling */
 .mode-selection {
   margin-top: 2rem;
   text-align: center;
@@ -23,27 +116,133 @@
 }
 
 .live-button {
-  background-color: #4CAF50;  /* green */
-  color: white;
+  background-color: #A0D8D3;  /* Soft teal */
+  color: #FFFFFF;
+}
+
+.video-upload-container {
+  text-align: center;
+  margin: 20px 0; /* Adjust margin as needed */
 }
 
 .upload-button {
-  background-color: #2196F3;  /* blue */
-  color: white;
+  display: inline-block;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff; /* White text */
+  background-color: #F28C8C; /* Your desired color */
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
 }
 
-/* Optionally, style the exercise selector */
-.exercise-selector {
-  margin-top: 1rem;
+.upload-button:hover {
+  transform: translateY(-2px);
+}
+.video-upload-container {
   text-align: center;
+  margin: 20px 0;
 }
 
-.exercise-selector label {
-  font-size: 1.1rem;
-  margin-right: 1rem;
+.upload-button-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px; /* space between the icon and button */
+  margin-bottom: 10px;
 }
 
-.exercise-selector select {
-  padding: 0.5rem;
-  font-size: 1rem;
+.upload-button {
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff; /* White text */
+  background-color: #F28C8C; /* Button color */
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
 }
+
+.upload-button:hover {
+  transform: translateY(-2px);
+}
+
+.squat-icon {
+  width: 32px; /* Adjust size as needed */
+  height: auto;
+}
+
+.video-upload-container {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.upload-button-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px; /* Space between icon and button */
+  margin-bottom: 15px;
+}
+
+.upload-button {
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff; /* White text */
+  background-color: #F28C8C; /* Your chosen button color */
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.upload-button:hover {
+  transform: translateY(-2px);
+  background-color: #E67575; /* Slightly darker on hover */
+}
+
+.squat-icon {
+  width: 40px; /* Adjust icon size */
+  height: auto;
+}
+
+/* CAMERA INSTRUCTIONS STYLING */
+.camera-instructions {
+  background: none; /* No background */
+  padding: 15px;
+  border-radius: 10px;
+  max-width: 400px;
+  text-align: left; /* Align text to the left */
+  color: black; /* Change text color to black */
+  margin-top: 30px; /* Increase margin to move it further below the button */
+  margin-left: 20px; /* Start further from the left */
+}
+
+.camera-instructions h3 {
+  font-size: 18px;
+  color: black;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.camera-instructions ul {
+  list-style: none;
+  padding: 0;
+}
+
+.camera-instructions li {
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgb(9, 29, 48);
+}
+
+.camera-instructions li::before {
+  content: "✔";
+  color: #F28C8C;
+  font-weight: bold;
+}
+

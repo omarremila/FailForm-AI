@@ -1,0 +1,158 @@
+// Squat.jsx
+
+// Data storage for analysis
+const squatData = []; // Stores frame-by-frame angle data (optional)
+let highest_angle = -Infinity; // We'll record the highest angle observed
+const minScore = 0.6; // Minimum acceptable confidence score
+
+/**
+ * Determines which side (left or right) to use for measurements,
+ * based on the higher average confidence of keypoints on that side.
+ * (This ensures that for a side view, we use only one reliable side.)
+ *
+ * @param {Array} keypoints - Array of PoseNet keypoints.
+ * @returns {Object|null} Object with selected keypoints or null if none are reliable.
+ */
+function selectSide(keypoints) {
+  // Key parts we need: shoulder, hip, knee, and ankle.
+  const left = {
+    shoulder: keypoints.find(k => k.part === 'leftShoulder'),
+    hip: keypoints.find(k => k.part === 'leftHip'),
+    knee: keypoints.find(k => k.part === 'leftKnee'),
+    ankle: keypoints.find(k => k.part === 'leftAnkle'),
+  };
+  const right = {
+    shoulder: keypoints.find(k => k.part === 'rightShoulder'),
+    hip: keypoints.find(k => k.part === 'rightHip'),
+    knee: keypoints.find(k => k.part === 'rightKnee'),
+    ankle: keypoints.find(k => k.part === 'rightAnkle'),
+  };
+
+  // Calculate average confidence for each side (only count those above threshold)
+  const avgScore = (side) => {
+    const scores = [];
+    Object.values(side).forEach(kp => {
+      if (kp && kp.score >= minScore) scores.push(kp.score);
+    });
+    return scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+  };
+
+  const leftAvg = avgScore(left);
+  const rightAvg = avgScore(right);
+
+  if (leftAvg >= rightAvg && leftAvg > 0) {
+    return { ...left, side: 'left' };
+  } else if (rightAvg > 0) {
+    return { ...right, side: 'right' };
+  }
+  return null;
+}
+
+/**
+ * Provides squat depth feedback based on the selected side keypoints.
+ * For a proper squat, the hip should be lower than the knee.
+ *
+ * @param {Object} selected - Object containing keypoints from one side.
+ * @returns {Object} Feedback with a message and a color.
+ */
+function getSquatFeedback(selected) {
+  if (!selected) {
+    return { message: "Required keypoints not detected reliably", color: "yellow" };
+  }
+  if (selected.hip.position.y < selected.knee.position.y) {
+    return { message: "You're not squatting deep enough", color: "red" };
+  }
+  return { message: "Correct Form!!", color: "green" };
+}
+
+/**
+ * Processes the squat by:
+ * - Selecting the reliable side.
+ * - Drawing a red line from the chosen shoulder to hip.
+ * - Calculating the angle between that line and the vertical.
+ * - Storing the lowest angle across the session.
+ * - (Optionally) Storing the angle for each frame.
+ *
+ * @param {Array} keypoints - Array of PoseNet keypoints.
+ * @param {CanvasRenderingContext2D} ctx - Canvas drawing context.
+ * @returns {Object} Feedback object with a temporary message.
+ */
+export function processSquat(keypoints, ctx) {
+  const selected = selectSide(keypoints);
+  if (selected && selected.shoulder && selected.hip) {
+    // Draw a red line from shoulder to hip on the selected side.
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.beginPath();
+    ctx.moveTo(selected.shoulder.position.x, selected.shoulder.position.y);
+    ctx.lineTo(selected.hip.position.x, selected.hip.position.y);
+    ctx.strokeStyle = 'red';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Calculate the angle between this line and the vertical axis.
+    const dx = selected.hip.position.x - selected.shoulder.position.x;
+    const dy = selected.hip.position.y - selected.shoulder.position.y;
+    const angleRad = Math.atan2(dx, dy);
+    const angleDeg = Math.abs(angleRad * (180 / Math.PI));
+
+    // Update the lowest angle (we want the minimum angle observed)
+   
+    if (angleDeg > highest_angle) {
+      highest_angle = angleDeg;
+    }
+
+
+    // (Optionally) Store this frame's angle
+    squatData.push({ angle: angleDeg });
+
+    // Display the current angle on the canvas (for live feedback)
+    ctx.font = "18px Arial";
+    ctx.fillStyle = "red";
+    ctx.fillText(`Angle: ${angleDeg.toFixed(1)}°`, selected.shoulder.position.x + 10, selected.shoulder.position.y - 20);
+  }
+
+  // Return temporary feedback during the session.
+  // (Final evaluation will be done after the video.)
+  return { message: "Analyzing squat...", color: "blue" };
+}
+
+/**
+ * Evaluates the squat session using the lowest angle recorded.
+ * Thresholds:
+ *   - Great form: lowest angle < 10°
+ *   - Okay form: lowest angle between 10° and 15°
+ *   - Bad form: lowest angle ≥ 15°
+ *
+ * @returns {Object} Final evaluation with a score, message, and color.
+ */
+export function evaluateSquatSession() {
+  if (highest_angle === -Infinity) {
+    return { score: 0, message: "No squat data", color: "gray" };
+  }
+  
+  let message = "";
+  let color = "";
+  
+  if (highest_angle > 30) {
+    message = "Great Squat Form!";
+    color = "green";
+  } else if (highest_angle >= 20 && highest_angle < 30) {
+    message = "Okay Squat Form.";
+    color = "orange";
+  } else {
+    message = "Bad Squat Form.";
+    color = "red";
+  }
+
+  return { highest_angle: highest_angle.toFixed(1), message, color };
+}
+
+/**
+ * Resets squat analysis data for a new session.
+ */
+export function resetSquatAnalysis() {
+  squatData.length = 0;
+  highest_angle = -Infinity;
+}
+
+export default processSquat;

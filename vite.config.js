@@ -1,7 +1,8 @@
+// vite.config.js
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
 export default defineConfig({
+  base: '/FailForm-AI/', // <-- set this to your repo name (with leading and trailing slashes)
   plugins: [react()],
 })
