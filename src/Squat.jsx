@@ -7,6 +7,19 @@ let highest_angle = -Infinity; // We'll record the highest angle observed
 let lowest_angle = Infinity; // We'll record the lowest angle observed
 
 const minScore = 0.6; // Minimum acceptable confidence score
+// In Squat.jsx, below your existing getPreparedData function:
+export function getPreparedDataSummary() {
+  const samplingRate = 50; // For instance, sample every 10th frame
+  const sampledData = squatData.filter((frame, index) => index % samplingRate === 0);
+
+  return {
+    highestAngle: highest_angle,
+    lowestAngle: lowest_angle,
+    squatData: sampledData,
+    totalFrames: squatData.length,
+    sampledFrames: sampledData.length,
+  };
+}
 
 /**
  * Determines which side (left or right) to use for measurements,
