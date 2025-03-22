@@ -143,6 +143,8 @@ export function processSquat(keypoints, ctx) {
 
 
     // (Optionally) Store this frame's angle
+    console.log(JSON.stringify(squatData, null, 2));
+
     squatData.push({
       shoulder: selected.shoulder.position,
       elbow: selected.elbow.position,
